@@ -9,7 +9,8 @@ const connectDoc = doc => {
       config: {
         iceServers: [
           { urls: 'stun:stun.l.google.com:19302' },
-          { urls: 'stun:global.stun.twilio.com:3478?transport=udp' }
+          { urls: 'stun:stun.nextcloud.com:443' },
+          { urls: 'stun:relay.webwormhole.io' }
         ]
       }
     }
