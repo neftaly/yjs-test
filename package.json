@@ -10,11 +10,12 @@
     "web-vitals": "^1.0.1",
     "y-webrtc": "^10.1.8",
     "yjs": "^13.5.1",
-    "zustand": "^3.3.3"
+    "zustand": "^3.3.3",
+    "zustand-yjs": "0.0.8"
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build"
+    "build": "react-scripts build && rm -rf docs && mv build docs"
   },
   "eslintConfig": {
     "extends": [
