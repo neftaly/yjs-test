@@ -1,14 +1,26 @@
-import { useMemo, useEffect } from 'react'
+import { useState } from 'react'
 import * as Y from 'yjs'
 import { WebrtcProvider } from 'y-webrtc'
 import { useYDoc, useYArray } from 'zustand-yjs'
 
 const connectDoc = doc => {
-  const provider = new WebrtcProvider('testyroom', doc, {})
-  return () => console.log('dc') || provider.disconnect()
+  const provider = new WebrtcProvider('testyroom', doc, {
+    peerOpts: {
+      config: {
+        iceServers: [
+          { urls: 'stun:stun.l.google.com:19302' },
+          { urls: 'stun:global.stun.twilio.com:3478?transport=udp' }
+        ]
+      }
+    }
+  })
+  return () => {
+    console.log('disconnected') 
+    provider.disconnect()
+  }
 }
 
-const App = () => {
+const Doc = () => {
   const yDoc = useYDoc('myDocGuid', connectDoc)
   const { data, push } = useYArray(yDoc.getArray('usernames'))
   return (
@@ -22,6 +34,20 @@ const App = () => {
         ))}
       </ul>
     </div>
+  )
+}
+
+const App = () => {
+  const [mounted, setMounted] = useState(true)
+  return (
+    <>
+      <button children={
+        mounted ? 'unmount' : 'mount'
+      } onClick={
+        event => setMounted(!mounted)
+      } />
+      {mounted && <Doc />}
+    </>
   )
 }
 
