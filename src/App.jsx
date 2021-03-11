@@ -1,23 +1,31 @@
 import { useState } from 'react'
 import * as Y from 'yjs'
-import { WebrtcProvider } from 'y-webrtc'
 import { useYDoc, useYArray } from 'zustand-yjs'
+import { WebrtcProvider } from 'y-webrtc'
+import { WebsocketProvider } from 'y-websocket'
+import { IndexeddbPersistence } from 'y-indexeddb'
 
 const connectDoc = doc => {
-  const provider = new WebrtcProvider('testyroom', doc, {
-    peerOpts: {
-      config: {
-        iceServers: [
-          { urls: 'stun:stun.l.google.com:19302' },
-          { urls: 'stun:stun.nextcloud.com:443' },
-          { urls: 'stun:relay.webwormhole.io' }
-        ]
+  const room = 'testyroom'
+  const rtcProvider = new WebrtcProvider(
+    room, doc, {
+      peerOpts: {
+        config: {
+          iceServers: [
+            { urls: 'stun:stun.l.google.com:19302' }
+          ]
+        }
       }
     }
-  })
+  )
+  const wsProvider = new WebsocketProvider(
+    'ws://localhost:1234', room, doc, {}
+  )
+  const idbProvider = new IndexeddbPersistence(room, doc)
   return () => {
-    console.log('disconnected') 
-    provider.disconnect()
+    rtcProvider.destroy()
+    wsProvider.destroy()
+    idbProvider.destroy()
   }
 }
 
