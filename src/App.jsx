@@ -2,13 +2,19 @@ import { useState } from 'react'
 import * as Y from 'yjs'
 import { useYDoc, useYArray } from 'zustand-yjs'
 import { WebrtcProvider } from 'y-webrtc'
-import { WebsocketProvider } from 'y-websocket'
 import { IndexeddbPersistence } from 'y-indexeddb'
 
-const connectDoc = doc => {
-  const room = 'testyroom'
+const connectDoc = ({ room, awareness, password }) => doc => {
+  const idbProvider = new IndexeddbPersistence(`prob-y-${room}`, doc)
+  const setLastAccess = () => idbProvider.set('lastAccess', new Date().valueOf())
+  setLastAccess()
+  idbProvider.set('room', room)
   const rtcProvider = new WebrtcProvider(
     room, doc, {
+      awareness,
+      password,
+      filterBcConns: false, // TODO: dev only? allow video in multiple tabs
+      maxConns: Infinity,
       peerOpts: {
         config: {
           iceServers: [
@@ -18,19 +24,15 @@ const connectDoc = doc => {
       }
     }
   )
-  const wsProvider = new WebsocketProvider(
-    'ws://localhost:1234', room, doc, {}
-  )
-  const idbProvider = new IndexeddbPersistence(room, doc)
   return () => {
-    rtcProvider.destroy()
-    wsProvider.destroy()
+    setLastAccess()
     idbProvider.destroy()
+    rtcProvider.destroy()
   }
 }
 
 const Doc = () => {
-  const yDoc = useYDoc('myDocGuid', connectDoc)
+  const yDoc = useYDoc('myDocGuid', connectDoc({ room: 'testyroom'}))
   const { data, push } = useYArray(yDoc.getArray('usernames'))
   return (
     <div>
